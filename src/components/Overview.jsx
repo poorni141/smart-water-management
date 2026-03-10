@@ -1,23 +1,28 @@
-import React, { useEffect } from 'react';
+import React, {  useState } from 'react';
 import { useData } from '../context/DataContext';
 import './Overview.css';
 
 function Overview() {
   
   const { metrics, zones, pressure24h, criticalAlertsCount, warningAlertsCount, infoAlertsCount } = useData();
-  useEffect(() => {
+  const [inputFlow, setInputFlow] = useState('');
+  const [outputFlow, setOutputFlow] = useState('');
+  const [, setRefresh] = useState(0);
+  function processData(){
 
-    const interval = setInterval(() => {
-
-      metrics.flowRate = Math.floor(Math.random() * 700);
-      metrics.efficiency = 90 + Math.floor(Math.random() * 10);
-      metrics.energy = 1000 + Math.floor(Math.random() * 300);
-
-    }, 2000);
-
-    return () => clearInterval(interval);
-
-  }, []);
+    const input = Number(inputFlow);
+    const output = Number(outputFlow);
+  
+    if(input === 0) return;
+  
+    const efficiency = ((output / input) * 100).toFixed(2);
+    const energy = (input * 1.5).toFixed(0);
+  
+    metrics.flowRate = input;
+    metrics.efficiency = efficiency;
+    metrics.energy = energy;
+    setRefresh(prev => prev + 1);
+  }
   // Highlight any active leaks based on risk level
   const activeLeaksCount = zones.filter(z => z.status === 'alert').length;
 
@@ -86,6 +91,25 @@ function Overview() {
 
   return (
     <div className="overview-container animate-fade-in">
+    <div className="glass-panel" style={{padding:"20px", marginBottom:"20px"}}>
+  <h3>Manual Sensor Input</h3>
+
+  <input
+    type="number"
+    placeholder="Input Flow"
+    value={inputFlow}
+    onChange={(e)=>setInputFlow(e.target.value)}
+  />
+
+  <input
+    type="number"
+    placeholder="Output Flow"
+    value={outputFlow}
+    onChange={(e)=>setOutputFlow(e.target.value)}
+  />
+
+  <button onClick={processData}>Process Data</button>
+</div>
       <div className="metrics-grid">
         {displayMetrics.map(metric => (
           <div key={metric.id} className="metric-card glass-panel">
