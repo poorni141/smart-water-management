@@ -1,0 +1,73 @@
+/* Additional Responsive Rules */
+
+@media (max-width: 1024px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .dashboard-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .feature-module .flex-between {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .feature-module .flex-between > div {
+    width: 100%;
+  }
+
+  .zone-grid .flex-between {
+     flex-direction: column;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-layout {
+    flex-direction: column;
+  }
+  
+  .fixed-sidebar {
+    width: 100%;
+    height: auto;
+    position: static;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  .sidebar-nav ul {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .nav-btn {
+    width: auto;
+    padding: 0.5rem;
+  }
+  
+  .nav-label {
+    display: none;
+  }
+
+  .sidebar-footer {
+    display: none;
+  }
+  
+  .top-nav {
+    padding: 0 1rem;
+  }
+  
+  .nav-actions {
+    gap: 0.5rem;
+  }
+  
+  .system-status .status-text {
+    display: none;
+  }
+  
+  .dashboard-content {
+    padding: 1rem;
+  }
+}

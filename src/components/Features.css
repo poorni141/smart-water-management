@@ -1,0 +1,116 @@
+@import url('./FeaturesExtras.css');
+
+.feature-module {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.module-header {
+  justify-content: flex-start;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.module-header h2 {
+  font-size: 1.8rem;
+  margin: 0;
+}
+
+.w-full {
+  width: 100%;
+}
+
+/* Map specific styles */
+.network-map {
+  background-color: var(--bg-tertiary);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+}
+
+.map-grid {
+  position: absolute;
+  inset: 0;
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+}
+
+.sensor {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  position: absolute;
+  z-index: 2;
+  transform: translate(-50%, -50%);
+  border: 2px solid var(--bg-primary);
+}
+
+.sensor.normal { background: var(--accent-green); box-shadow: var(--glow-green); }
+.sensor.alert { background: var(--accent-red); }
+.sensor.warning { background: var(--accent-yellow); }
+
+.pipe {
+  position: absolute;
+  background: var(--accent-cyan);
+  opacity: 0.3;
+  z-index: 1;
+}
+
+.pipe-h { height: 4px; transform: translateY(-50%); }
+.pipe-v { width: 4px; transform: translateX(-50%); }
+
+.pipe.leak {
+  background: var(--accent-red);
+  opacity: 0.8;
+  animation: flash 1.5s infinite alternate;
+}
+
+@keyframes flash {
+  0% { opacity: 0.4; box-shadow: 0 0 5px rgba(239, 68, 68, 0); }
+  100% { opacity: 1; box-shadow: 0 0 15px rgba(239, 68, 68, 0.8); }
+}
+
+.pulse-red {
+  animation: pulse-red-animation 1.5s infinite;
+}
+
+@keyframes pulse-red-animation {
+  0% { transform: translate(-50%, -50%) scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+  70% { transform: translate(-50%, -50%) scale(1.1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+  100% { transform: translate(-50%, -50%) scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+/* Zone Cards */
+.zone-card {
+  flex: 1;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.status-dot.normal { background: var(--accent-green); }
+.status-dot.warning { background: var(--accent-yellow); }
+.status-dot.alert { background: var(--accent-red); box-shadow: var(--glow-red); }
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.9rem;
+}
+
+.stat-row:last-child {
+  border-bottom: none;
+}
+
+.text-danger { color: var(--accent-red); font-weight: bold; }
+.text-primary { color: var(--text-primary); font-weight: 500; }

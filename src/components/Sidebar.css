@@ -1,0 +1,129 @@
+.fixed-sidebar {
+  width: 260px;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  transition: width var(--transition-normal);
+  flex-shrink: 0;
+}
+
+.sidebar-header {
+  height: 70px;
+  border-bottom: 1px solid var(--border-color);
+  padding: 0 1.5rem;
+  justify-content: flex-start;
+  gap: 0.75rem;
+}
+
+.logo-icon {
+  width: 36px;
+  height: 36px;
+  background: rgba(6, 182, 212, 0.1);
+  border-radius: var(--border-radius-md);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  font-size: 1.25rem;
+  box-shadow: var(--glow-cyan);
+}
+
+.brand-title {
+  font-size: 1.25rem;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 1.5rem 1rem;
+  overflow-y: auto;
+}
+
+.sidebar-nav ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.nav-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+  background: transparent;
+  color: var(--text-secondary);
+  border-radius: var(--border-radius-md);
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all var(--transition-fast);
+}
+
+.nav-btn:hover {
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-primary);
+  transform: translateX(4px);
+}
+
+.nav-btn.active {
+  background: rgba(6, 182, 212, 0.1);
+  color: var(--accent-cyan);
+  border-left: 3px solid var(--accent-cyan);
+}
+
+.nav-icon {
+  font-size: 1.2rem;
+  filter: grayscale(0.5);
+  transition: filter var(--transition-fast);
+}
+
+.nav-btn.active .nav-icon,
+.nav-btn:hover .nav-icon {
+  filter: grayscale(0);
+}
+
+.sidebar-footer {
+  padding: 1.5rem 1rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.user-profile {
+  justify-content: flex-start;
+  gap: 1rem;
+  padding: 0.5rem;
+  border-radius: var(--border-radius-md);
+  background: rgba(0,0,0,0.1);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.user-profile:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--border-radius-pill);
+  background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.user-name {
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.user-role {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  margin: 0;
+}
