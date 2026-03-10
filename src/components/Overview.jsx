@@ -1,10 +1,23 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useData } from '../context/DataContext';
 import './Overview.css';
 
 function Overview() {
+  
   const { metrics, zones, pressure24h, criticalAlertsCount, warningAlertsCount, infoAlertsCount } = useData();
+  useEffect(() => {
 
+    const interval = setInterval(() => {
+
+      metrics.flowRate = Math.floor(Math.random() * 700);
+      metrics.efficiency = 90 + Math.floor(Math.random() * 10);
+      metrics.energy = 1000 + Math.floor(Math.random() * 300);
+
+    }, 2000);
+
+    return () => clearInterval(interval);
+
+  }, []);
   // Highlight any active leaks based on risk level
   const activeLeaksCount = zones.filter(z => z.status === 'alert').length;
 
