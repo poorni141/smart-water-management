@@ -3,7 +3,41 @@ import { useData } from '../context/DataContext';
 import './Features.css';
 
 function Forecast() {
-  const { metrics } = useData();
+  const { metrics, forecast72h } = useData();
+
+  const demandValues = (forecast72h ?? []).map(p => p.demand);
+  const capValues = (forecast72h ?? []).map(p => p.capacity);
+  const minY = demandValues.length ? Math.min(...demandValues, ...capValues) : 35000;
+  const maxY = demandValues.length ? Math.max(...demandValues, ...capValues) : 52000;
+  const span = Math.max(1, maxY - minY);
+
+  const demandPath = (() => {
+    if (!forecast72h?.length) return '';
+    const w = 100;
+    const h = 100;
+    const pad = 6;
+    const n = forecast72h.length;
+    const xStep = (w - pad * 2) / Math.max(1, n - 1);
+    return forecast72h
+      .map((p, i) => {
+        const x = pad + i * xStep;
+        const y = pad + (h - pad * 2) * (1 - (p.demand - minY) / span);
+        return `${i === 0 ? 'M' : 'L'}${x.toFixed(2)},${y.toFixed(2)}`;
+      })
+      .join(' ');
+  })();
+
+  const capacityY = (() => {
+    const cap = forecast72h?.[0]?.capacity ?? 50000;
+    const pad = 6;
+    const h = 100;
+    return pad + (h - pad * 2) * (1 - (cap - minY) / span);
+  })();
+
+  const currentDemand = forecast72h?.[0]?.demand ?? metrics.flowRate;
+  const peakDemand = demandValues.length ? Math.max(...demandValues) : currentDemand;
+  const capacity = forecast72h?.[0]?.capacity ?? 50000;
+  const headroom = Math.max(0, capacity - peakDemand);
 
   return (
     <div className="feature-module animate-fade-in">
@@ -27,12 +61,18 @@ function Forecast() {
            </div>
 
            <div className="forecast-chart-area" style={{ flex: 1, position: 'relative', borderLeft: '1px solid var(--border-color)', borderBottom: '1px solid var(--border-color)' }}>
-              {/* Mock Area Chart */}
               <svg width="100%" height="100%" preserveAspectRatio="none" viewBox="0 0 100 100" style={{ position: 'absolute', inset: 0 }}>
-                 <path d="M0,80 Q10,70 20,85 T40,60 T60,50 T80,40 T100,55 L100,100 L0,100 Z" fill="url(#blue-grad)" opacity="0.3"></path>
-                 <path d="M0,80 Q10,70 20,85 T40,60 T60,50 T80,40 T100,55" fill="none" stroke="var(--accent-blue)" strokeWidth="0.5" className="draw-line"></path>
-                 
-                 <path d="M0,20 L100,20" stroke="var(--accent-green)" strokeWidth="0.5" strokeDasharray="2,2"></path>
+                 <path d="M6,94 L6,6" stroke="rgba(255,255,255,0.10)" strokeWidth="0.6" />
+                 <path d="M6,94 L94,94" stroke="rgba(255,255,255,0.10)" strokeWidth="0.6" />
+
+                 {demandPath && (
+                   <>
+                     <path d={`${demandPath} L94,94 L6,94 Z`} fill="url(#blue-grad)" opacity="0.22"></path>
+                     <path d={demandPath} fill="none" stroke="var(--accent-blue)" strokeWidth="0.9" className="draw-line"></path>
+                   </>
+                 )}
+
+                 <path d={`M6,${capacityY.toFixed(2)} L94,${capacityY.toFixed(2)}`} stroke="var(--accent-green)" strokeWidth="0.7" strokeDasharray="2,2"></path>
                  
                  <defs>
                    <linearGradient id="blue-grad" x1="0" y1="0" x2="0" y2="1">
@@ -44,6 +84,17 @@ function Forecast() {
            </div>
            <div className="flex-between text-muted" style={{ padding: '0.5rem 0 0', fontSize: '0.8rem' }}>
               <span>Today (Flow: {metrics.flowRate.toLocaleString()})</span><span>+24h</span><span>+48h</span><span>+72h</span>
+           </div>
+           <div className="flex-between" style={{ paddingTop: '0.75rem', gap: '1rem', flexWrap: 'wrap' }}>
+              <span className="badge" style={{ background: 'rgba(6, 182, 212, 0.15)', color: 'var(--accent-cyan)' }}>
+                Current demand: {currentDemand.toLocaleString()} L/min
+              </span>
+              <span className="badge" style={{ background: 'rgba(59, 130, 246, 0.15)', color: 'var(--accent-blue)' }}>
+                Peak (72h): {peakDemand.toLocaleString()} L/min
+              </span>
+              <span className="badge" style={{ background: 'rgba(16, 185, 129, 0.15)', color: 'var(--accent-green)' }}>
+                Capacity headroom: {headroom.toLocaleString()} L/min
+              </span>
            </div>
         </div>
 

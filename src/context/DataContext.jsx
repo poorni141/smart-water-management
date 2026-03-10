@@ -5,8 +5,9 @@ const DataContext = createContext();
 export const useData = () => useContext(DataContext);
 
 export const DataProvider = ({ children }) => {
-  // Helper to generate random numbers in range
-  const randomInRange = (min, max) => (Math.random() * (max - min) + min).toFixed(1);
+  const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+  const randomInRange = (min, max) => Math.random() * (max - min) + min;
+  const roundTo = (v, digits = 1) => Number(v.toFixed(digits));
 
   // Synthetic State
   const [metrics, setMetrics] = useState({
@@ -37,14 +38,37 @@ export const DataProvider = ({ children }) => {
     pumpTime: 18.5
   });
 
+  // 24h synthetic pressure series (hourly)
+  const [pressure24h, setPressure24h] = useState(() => {
+    const points = Array.from({ length: 24 }, (_, i) => ({
+      t: i,
+      pressure: roundTo(randomInRange(2.6, 4.9), 2),
+    }));
+    return points;
+  });
+
+  // 72h synthetic demand forecast series (every 6 hours -> 13 points including 0)
+  const [forecast72h, setForecast72h] = useState(() => {
+    const points = Array.from({ length: 13 }, (_, i) => {
+      const hour = i * 6;
+      const base = 42000 + 2500 * Math.sin((i / 12) * Math.PI * 2);
+      const noise = randomInRange(-1200, 1200);
+      const demand = clamp(base + noise, 36000, 52000);
+      const capacity = 50000;
+      return { hour, demand: Math.round(demand), capacity };
+    });
+    return points;
+  });
+
   // Simulation Loop: periodically update data slightly to feel "alive"
   useEffect(() => {
     const interval = setInterval(() => {
       // 1. Update Metrics
       setMetrics(prev => ({
         ...prev,
-        flowRate: Math.max(40000, Math.min(50000, prev.flowRate + (Math.random() > 0.5 ? 1 : -1) * Math.floor(Math.random() * 50))),
-        efficiency: Math.max(90, Math.min(99, parseFloat(prev.efficiency) + (Math.random() > 0.5 ? 0.1 : -0.1))).toFixed(1),
+        flowRate: clamp(prev.flowRate + (Math.random() > 0.5 ? 1 : -1) * Math.floor(randomInRange(10, 80)), 40000, 52000),
+        efficiency: roundTo(clamp(Number(prev.efficiency) + (Math.random() > 0.5 ? 0.1 : -0.1), 90, 99), 1),
+        energy: Math.round(clamp(prev.energy + (Math.random() > 0.55 ? 1 : -1) * randomInRange(5, 25), 900, 1700)),
       }));
 
       // 2. Update Zones (fluctuate pressure and flow slightly)
@@ -53,8 +77,8 @@ export const DataProvider = ({ children }) => {
         const flowShift = (Math.random() > 0.5 ? 2 : -2);
         return {
           ...zone,
-          pressure: Math.max(2.0, parseFloat(zone.pressure) + pressureShift).toFixed(2),
-          flow: Math.max(50, parseFloat(zone.flow) + flowShift).toFixed(0)
+          pressure: roundTo(Math.max(2.0, Number(zone.pressure) + pressureShift), 2),
+          flow: Math.round(Math.max(50, Number(zone.flow) + flowShift))
         };
       }));
 
@@ -62,11 +86,32 @@ export const DataProvider = ({ children }) => {
       if (Math.random() > 0.7) {
         setEfficiencyData(prev => ({
           ...prev,
-          flowBars: prev.flowBars.map(b => Math.max(20, Math.min(100, b + (Math.random() > 0.5 ? 5 : -5))))
+          flowBars: prev.flowBars.map(b => clamp(b + (Math.random() > 0.5 ? 5 : -5), 20, 100)),
+          nrw: roundTo(clamp(prev.nrw + (Math.random() > 0.6 ? -0.1 : 0.1), 6, 18), 1),
+          energyPerCb: roundTo(clamp(prev.energyPerCb + (Math.random() > 0.5 ? -0.01 : 0.01), 0.32, 0.68), 2),
+          pumpTime: roundTo(clamp(prev.pumpTime + (Math.random() > 0.6 ? -0.1 : 0.1), 10, 22), 1),
         }));
       }
 
-      // 4. Randomly generate a new alert sometimes (very rarely)
+      // 4. Update pressure series (slide window and add new point)
+      setPressure24h(prev => {
+        const last = prev[prev.length - 1]?.pressure ?? 3.8;
+        const drift = randomInRange(-0.12, 0.12);
+        const next = roundTo(clamp(last + drift, 2.2, 5.2), 2);
+        const nextSeries = [...prev.slice(1), { t: prev[prev.length - 1].t + 1, pressure: next }];
+        return nextSeries;
+      });
+
+      // 5. Update forecast slightly (keep shape but nudge demand)
+      setForecast72h(prev => prev.map((p, idx) => {
+        if (idx === 0) {
+          return { ...p, demand: Math.round(clamp(metrics.flowRate + randomInRange(-800, 800), 36000, 52000)) };
+        }
+        const wiggle = randomInRange(-250, 250);
+        return { ...p, demand: Math.round(clamp(p.demand + wiggle, 34000, 54000)) };
+      }));
+
+      // 6. Randomly generate a new alert sometimes (very rarely)
       if (Math.random() > 0.95) {
         const newAlert = {
           id: Date.now(),
@@ -87,6 +132,7 @@ export const DataProvider = ({ children }) => {
   // Compute derived state
   const criticalAlertsCount = alerts.filter(a => a.type === 'critical' && a.status !== 'Resolved').length;
   const warningAlertsCount = alerts.filter(a => a.type === 'warning' && a.status !== 'Resolved').length;
+  const infoAlertsCount = alerts.filter(a => a.type === 'info' && a.status !== 'Resolved').length;
   const systemStatus = criticalAlertsCount > 0 ? 'Critical' : warningAlertsCount > 0 ? 'Warning' : 'Optimal';
 
   const value = {
@@ -94,8 +140,11 @@ export const DataProvider = ({ children }) => {
     zones,
     alerts,
     efficiencyData,
+    pressure24h,
+    forecast72h,
     criticalAlertsCount,
     warningAlertsCount,
+    infoAlertsCount,
     systemStatus
   };
 
