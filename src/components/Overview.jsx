@@ -18,9 +18,16 @@ function Overview() {
     const efficiency = ((output / input) * 100).toFixed(2);
     const energy = (input * 1.5).toFixed(0);
   
+    const leakLoss = input - output;
+    const leakPercent = ((leakLoss / input) * 100).toFixed(2);
+  
     metrics.flowRate = input;
     metrics.efficiency = efficiency;
     metrics.energy = energy;
+  
+    console.log("Leak Loss:", leakLoss);
+    console.log("Leak Percentage:", leakPercent + "%");
+  
     setRefresh(prev => prev + 1);
   }
   // Highlight any active leaks based on risk level
